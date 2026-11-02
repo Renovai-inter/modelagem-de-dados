@@ -1,0 +1,278 @@
+{
+  "enderecos": {
+    "descricao": "Endereços físicos utilizados por cooperativas, empresas e pontos de parada em rotas de coleta externa.",
+    "nivel_acesso": "Restrito (LGPD - Dados de Localização)",
+    "regras": {
+      "tipo": "Valores permitidos: 'Residencial', 'Comercial', 'Coleta'",
+      "cep": "Formato de CEP com máscara de 9 caracteres (ex: 00000-000)"
+    }
+  },
+  "categorias_materiais": {
+    "descricao": "Hierarquia de categorias de materiais recicláveis (ex: Plástico, Papel, Metal, Vidro) com suporte a subcategorias via autorreferência.",
+    "nivel_acesso": "Público",
+    "regras": {
+      "categoria_pai_id": "Autorreferência para categorias_materiais; define subcategorias quando preenchido",
+      "nome_categoria": "Obrigatório e único dentro da hierarquia de categorias"
+    }
+  },
+  "materiais": {
+    "descricao": "Catálogo de materiais recicláveis disponibilizados pelas cooperativas para negociação. Cada material é vinculado a uma categoria e opcionalmente a uma cooperativa específica.",
+    "nivel_acesso": "Interno",
+    "regras": {
+      "preco_sugerido": "Valor >= 0 quando informado; pode ser nulo se não definido",
+      "esta_disponivel": "Booleano que indica se o material está disponível para negociação com empresas",
+      "categoria_id": "Obrigatório; deve referenciar uma categoria válida em categorias_materiais"
+    }
+  },
+  "cooperativas": {
+    "descricao": "Cadastro das cooperativas de reciclagem participantes da plataforma Renovaí, incluindo dados institucionais, contato preferencial e contagem de cooperados.",
+    "nivel_acesso": "Público",
+    "regras": {
+      "contato_preferencial": "Valores restritos: 'WHATSAPP', 'TELEFONE' ou 'EMAIL'",
+      "numero_cooperados": "Inteiro maior ou igual a 0; atualizado conforme admissão e desligamento de funcionários"
+    }
+  },
+  "empresas": {
+    "descricao": "Cadastro das empresas geradoras de resíduos ou compradoras de recicláveis que interagem com as cooperativas via plataforma.",
+    "nivel_acesso": "Público",
+    "regras": {
+      "nome": "Razão social ou nome fantasia da empresa; campo obrigatório"
+    }
+  },
+  "empresa_materiais_interesses": {
+    "descricao": "Associação entre empresas e categorias de materiais de seu interesse, utilizada para pré-filtrar resultados de busca de cooperativas no app.",
+    "nivel_acesso": "Interno",
+    "regras": {
+      "empresa_id, categoria_id": "Chave composta única — uma empresa não pode registrar interesse duplicado na mesma categoria"
+    }
+  },
+  "empresa_cooperativas_favoritas": {
+    "descricao": "Relação de cooperativas marcadas como favoritas por uma empresa, permitindo acesso rápido ao perfil e histórico de negociações.",
+    "nivel_acesso": "Interno",
+    "regras": {
+      "empresa_id, cooperativa_id": "Vínculo único — uma empresa não pode favoritar a mesma cooperativa mais de uma vez",
+      "data_criacao": "Preenchida automaticamente no momento da ação de favoritar"
+    }
+  },
+  "perfis": {
+    "descricao": "Entidade jurídica/contábil unificada para empresas ou cooperativas, armazenando CNPJ, e-mail institucional e vínculo exclusivo com apenas um dos dois tipos de organização.",
+    "nivel_acesso": "Confidencial",
+    "regras": {
+      "cnpj": "Obrigatório, formato válido e único no sistema",
+      "chk_perfis_tipo": "Constraint garante que o perfil esteja vinculado EXCLUSIVAMENTE a uma empresa OU a uma cooperativa — nunca a ambas ou nenhuma",
+      "esta_ativo": "Controla se o perfil está habilitado para operar na plataforma"
+    }
+  },
+  "usuarios": {
+    "descricao": "Cadastro de pessoas físicas (cooperados, gestores, motoristas) com credenciais de autenticação, dados pessoais e controle de acesso à plataforma.",
+    "nivel_acesso": "Altamente Confidencial (LGPD - Dados Pessoais/Sensíveis)",
+    "regras": {
+      "cpf": "Formato único e válido com 11 a 14 caracteres (com ou sem máscara)",
+      "senha_hash": "Armazenamento obrigatoriamente criptografado — nunca plain text",
+      "data_nascimento": "Deve ser estritamente anterior à data atual (CHECK constraint)",
+      "token_redefinicao": "Token temporário para fluxo de redefinição de senha; expirado por data_token_expiracao"
+    }
+  },
+  "cargos": {
+    "descricao": "Domínio de funções e cargos disponíveis na plataforma, como Cooperado, Motorista e Gestor, utilizados no vínculo dos funcionários com a cooperativa.",
+    "nivel_acesso": "Público",
+    "regras": {
+      "cargo": "Descrição do cargo deve ser única no sistema"
+    }
+  },
+  "status": {
+    "descricao": "Tabela de domínio que centraliza os estados possíveis dos fluxos operacionais do sistema (coletas, triagens, pedidos, negociações).",
+    "nivel_acesso": "Público",
+    "regras": {
+      "referencia, status_atual": "Chave composta única por domínio de fluxo — evita duplicidade de estados para a mesma referência"
+    }
+  },
+  "funcionarios": {
+    "descricao": "Vínculo entre um usuário pessoa física e uma cooperativa, representando o cooperado, motorista ou gestor ativo. Controla admissão, desligamento e status operacional.",
+    "nivel_acesso": "Confidencial (RH)",
+    "regras": {
+      "status_funcionario": "Valores aceitos: 'ATIVO', 'AFASTADO' ou 'INATIVO'",
+      "esta_ativo": "Coluna gerada automaticamente (GENERATED ALWAYS AS): TRUE quando status é 'ATIVO' ou 'AFASTADO'",
+      "esta_afastado": "Coluna gerada automaticamente: TRUE exclusivamente quando status é 'AFASTADO'"
+    }
+  },
+  "telefones": {
+    "descricao": "Contatos telefônicos associados a perfis jurídicos (PJ) ou a usuários pessoas físicas, com constraint que impede dupla vinculação.",
+    "nivel_acesso": "Restrito (LGPD)",
+    "regras": {
+      "chk_telefones_dono": "Pertence obrigatoriamente a um perfil PJ OU a um usuário PF — nunca a ambos ou nenhum"
+    }
+  },
+  "equipes": {
+    "descricao": "Grupos operacionais de cooperados organizados para executar triagens de materiais recicláveis, cada equipe gerenciada por um funcionário com cargo de gestor.",
+    "nivel_acesso": "Interno",
+    "regras": {
+      "gestor_id": "Referência obrigatória a um funcionário ativo com permissão de gestor",
+      "esta_ativa": "Indica se a equipe está disponível para receber novas triagens"
+    }
+  },
+  "equipes_cooperados": {
+    "descricao": "Associação many-to-many entre equipes e cooperados membros, definindo a composição da equipe para execução das triagens.",
+    "nivel_acesso": "Interno",
+    "regras": {
+      "equipe_id, cooperado_id": "Par único — um cooperado não pode ser adicionado à mesma equipe mais de uma vez"
+    }
+  },
+  "pedidos": {
+    "descricao": "Ordens de compra de materiais recicláveis emitidas por empresas às cooperativas, com ciclo de vida controlado por status e datas.",
+    "nivel_acesso": "Interno",
+    "regras": {
+      "data_conclusao": "Quando informada, deve ser igual ou posterior à data_pedido (CHECK constraint)",
+      "empresa_id": "Obrigatório — todo pedido deve estar vinculado a uma empresa cadastrada"
+    }
+  },
+  "pedido_itens": {
+    "descricao": "Itens que compõem um pedido, especificando o material solicitado, a quantidade em kg e o preço unitário proposto pela empresa.",
+    "nivel_acesso": "Interno",
+    "regras": {
+      "quantidade_kg": "Deve ser maior que 0 quando informado",
+      "preco_unitario": "Obrigatório e maior ou igual a 0"
+    }
+  },
+  "pedidos_cooperativas": {
+    "descricao": "Tabela de distribuição de pedidos às cooperativas, registrando para qual cooperativa cada pedido foi direcionado e seu status atual de avaliação.",
+    "nivel_acesso": "Interno",
+    "regras": {
+      "pedido_id, cooperativa_id": "Unicidade de atribuição — um pedido não pode ser enviado duas vezes para a mesma cooperativa",
+      "status_id": "Referência obrigatória ao domínio de status; reflete o estado do pedido junto à cooperativa"
+    }
+  },
+  "negociacoes": {
+    "descricao": "Processo de negociação comercial entre empresa e cooperativa para um pedido específico, registrando valor total acordado e datas de abertura e fechamento.",
+    "nivel_acesso": "Confidencial",
+    "regras": {
+      "valor_total": "Valor financeiro consolidado e acordado da transação",
+      "uq_pedido_cooperativa_negociacao": "Uma negociação é única por combinação de pedido e cooperativa"
+    }
+  },
+  "negociacao_itens": {
+    "descricao": "Detalhamento dos materiais e condições negociadas especificamente no contexto de uma negociação, podendo diferir dos valores originais do pedido.",
+    "nivel_acesso": "Confidencial",
+    "regras": {
+      "quantidade_kg": "Deve ser estritamente maior que 0 quando informado",
+      "preco_unitario": "Obrigatório e maior ou igual a 0",
+      "negociacao_id, material_id": "Par único — cada material aparece uma única vez por negociação"
+    }
+  },
+  "negociacao_mensagens": {
+    "descricao": "Histórico de comunicação entre empresa e cooperativa durante uma negociação, incluindo mensagens de texto, contrapropostas e notificações automáticas do sistema.",
+    "nivel_acesso": "Confidencial",
+    "regras": {
+      "tipo_mensagem": "Valores aceitos: 'TEXTO', 'CONTRAPROPOSTA' ou 'SISTEMA'",
+      "remetente_id": "Referência ao perfil (PJ) que enviou a mensagem — empresa ou cooperativa"
+    }
+  },
+  "avaliacoes": {
+    "descricao": "Avaliações bilaterais de qualidade de serviço realizadas entre perfis de empresas e cooperativas após a conclusão de um pedido.",
+    "nivel_acesso": "Interno",
+    "regras": {
+      "nota": "Inteiro entre 1 e 5 quando informado",
+      "chk_avaliacoes_perfis_diferentes": "Um perfil não pode avaliar a si mesmo (avaliador_id <> avaliado_id)"
+    }
+  },
+  "eventos_operacionais": {
+    "descricao": "Tabela mãe abstrata de herança para eventos operacionais do Renovaí. Não aceita inserções diretas — serve como base estrutural para coletas e triagens via herança PostgreSQL.",
+    "nivel_acesso": "Interno",
+    "regras": {
+      "chk_evento_abstrato": "CHECK (FALSE) com NO INHERIT impede inserções diretas nesta tabela pai",
+      "status_id": "Status do evento herdado pelas tabelas filhas (coletas e triagens)"
+    }
+  },
+  "coletas": {
+    "descricao": "Registro de entrada de materiais recicláveis na cooperativa, originados de coleta externa em rotas ou de entrega direta por cooperados. Herda de eventos_operacionais.",
+    "nivel_acesso": "Interno",
+    "regras": {
+      "tipo_coleta": "Valores aceitos: 'EXTERNA' (via rota de coleta) ou 'ENTREGA' (entrega direta na cooperativa)",
+      "quantidade_kg": "Obrigatoriamente maior que 0 — representa o peso bruto registrado na pesagem inicial",
+      "cooperado_id": "Referência obrigatória ao funcionário responsável pelo registro da coleta"
+    }
+  },
+  "estoques": {
+    "descricao": "Saldo consolidado de cada material reciclável por cooperativa, atualizado automaticamente via movimentações de entrada (triagem) e saída (venda/pedido).",
+    "nivel_acesso": "Interno",
+    "regras": {
+      "quantidade_kg": "Não pode ser negativo (>= 0) — representa o saldo real disponível",
+      "cooperativa_id, material_id": "Chave composta única — saldo unificado por material dentro de cada cooperativa"
+    }
+  },
+  "triagens": {
+    "descricao": "Processamento operacional de separação de recicláveis pós-coleta, executado por equipes de cooperados. Registra o material separado, peso aproveitado e rejeito. Herda de eventos_operacionais.",
+    "nivel_acesso": "Interno",
+    "regras": {
+      "quantidade_kg": "Peso do material separado, deve ser maior que 0",
+      "quantidade_rejeito_kg": "Volume descartado não reaproveitável; deve ser maior ou igual a 0",
+      "equipe_id": "Obrigatório — toda triagem deve estar vinculada a uma equipe operacional",
+      "coleta_id": "Referência à coleta (evento_id em coletas) que originou esta triagem"
+    }
+  },
+  "movimentacoes_estoques": {
+    "descricao": "Kardex de movimentações de estoque (entradas por triagem e saídas por venda), garantindo rastreabilidade completa de cada kg de material processado.",
+    "nivel_acesso": "Interno",
+    "regras": {
+      "quantidade_kg": "Não pode ser zero; positivo indica entrada, negativo indica saída",
+      "tipo_movimentacao": "Coluna GENERATED ALWAYS AS: 'ENTRADA' se quantidade > 0, 'SAIDA' se quantidade < 0",
+      "chk_movimentacao_origem": "Origem exclusiva: ou vem de triagem_id (entrada) OU de item_id (saída por pedido) — nunca ambos ou nenhum"
+    }
+  },
+  "tipos_rateios": {
+    "descricao": "Domínio das modalidades de rateio disponíveis para distribuição de receitas entre cooperados (ex: proporcional por produção, igualitário).",
+    "nivel_acesso": "Interno",
+    "regras": {
+      "tipo_rateio": "Nome do tipo de rateio único no sistema"
+    }
+  },
+  "rateios": {
+    "descricao": "Fechamento mensal de distribuição de receitas e sobras financeiras da cooperativa entre os cooperados ativos, aberto automaticamente ao final de cada mês.",
+    "nivel_acesso": "Confidencial (Financeiro)",
+    "regras": {
+      "cooperativa_id, mes_referencia": "Apenas um rateio por cooperativa por competência mensal",
+      "gestor_id": "Referência ao funcionário gestor responsável pelo fechamento do rateio"
+    }
+  },
+  "rateios_funcionarios": {
+    "descricao": "Valores individuais atribuídos a cada cooperado no fechamento do rateio mensal, com porcentagem e montante calculados pelo gestor conforme o tipo de rateio selecionado.",
+    "nivel_acesso": "Altamente Confidencial (Dados Financeiros Pessoais)",
+    "regras": {
+      "valor_rateio": "Estritamente maior que 0 — todo cooperado contemplado deve receber valor positivo",
+      "rateio_id, cooperado_id": "Par único — cada cooperado aparece uma única vez por rateio"
+    }
+  },
+  "despesas": {
+    "descricao": "Cadastro de centros de custo e categorias de despesas operacionais da cooperativa (ex: água, energia elétrica), classificadas como fixas ou variáveis.",
+    "nivel_acesso": "Confidencial (Financeiro)",
+    "regras": {
+      "tipo_despesa": "Valores aceitos: 'FIXA' (recorrente com valor estável) ou 'VARIAVEL' (oscila por período)",
+      "cooperativa_id": "Obrigatório — toda despesa está vinculada a uma cooperativa específica"
+    }
+  },
+  "lancamentos_despesas": {
+    "descricao": "Valores efetivamente realizados e pagos por competência mensal para cada despesa cadastrada, compondo a base de dedução no cálculo do rateio.",
+    "nivel_acesso": "Confidencial (Financeiro)",
+    "regras": {
+      "valor": "Maior ou igual a 0",
+      "despesa_id, mes_referencia": "Lançamento único por mês para cada despesa — sem duplicidade de competência"
+    }
+  },
+  "rotas": {
+    "descricao": "Rotas logísticas de coleta externa operadas pelos motoristas das cooperativas, definindo o conjunto de pontos de parada para recolhimento de materiais recicláveis.",
+    "nivel_acesso": "Interno",
+    "regras": {
+      "nome": "Identificação descritiva e obrigatória da rota",
+      "cooperativa_id": "Obrigatório — cada rota pertence a uma cooperativa específica",
+      "esta_ativa": "Indica se a rota está disponível para ser atribuída a motoristas"
+    }
+  },
+  "rotas_enderecos": {
+    "descricao": "Sequenciamento ordenado dos endereços de parada de uma rota de coleta, com nome e tipo do local para orientação do motorista em campo.",
+    "nivel_acesso": "Interno",
+    "regras": {
+      "ordem": "Inteiro obrigatório indicando a sequência de visita aos endereços dentro da rota",
+      "nome_local": "Obrigatório — identificação do ponto de coleta (ex: nome do estabelecimento)"
+    }
+  }
+}
